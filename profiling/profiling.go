@@ -14,6 +14,7 @@ func init() {
 	caddy.RegisterModule(new(App))
 }
 
+// The `profiling` app hosts the collection of push-based profiling agents with common profiling parameters acorss the Caddy instance.
 type App struct {
 	caddy_profiling.Parameters
 	ProfilersRaw []json.RawMessage `json:"profilers,omitempty" caddy:"namespace=profiling.profiler inline_key=profiler"`
