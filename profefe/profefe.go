@@ -1,7 +1,6 @@
 package profefe
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/cookiejar"
 	"runtime"
@@ -18,11 +17,25 @@ func init() {
 	caddy.RegisterModule(new(ProfilingApp))
 }
 
+// The `profefe` app collects profiling data during the life-time of the process
+// and uploads them to the profefe server.
 type App struct {
-	Address    string                      `json:"address,omitempty"`
-	Service    string                      `json:"service,omitempty"`
-	Timeout    caddy.Duration              `json:"timeout,omitempty"`
-	Labels     []string                    `json:"labels,omitempty"`
+	// The URL of the Profefe service. The config value may be a [placeholder](https://caddyserver.com/docs/conventions#placeholders).
+	Address string `json:"address,omitempty"`
+
+	// The service name reported to Profefe. The config value may be a [placeholder](https://caddyserver.com/docs/conventions#placeholders).
+	Service string `json:"service,omitempty"`
+
+	// The timeout for the upload call. Setting the value to `0` disables the timeout and the call waits indefinitely until the upload is finished.
+	Timeout caddy.Duration `json:"timeout,omitempty"`
+
+	// TODO: similar to `tags` in Pyroscope, decide on this field
+	// Labels  []string       `json:"labels,omitempty"`
+
+	// The profiling parameters to be reported to Profefe.
+	// The paramters cpu_profile_rate, block_profile_rate, and mutex_profile_fraction are inherited from the `profiling` app if `profefe`
+	// is configured as a child module. The `profile_types` field is inherited if not configured explicitly.
+	// If `profefe` is configured as an app, all the parameters are instated as-is.
 	Parameters *caddy_profiling.Parameters `json:"parameters,omitempty"`
 
 	profefeOptions []agent.Option
@@ -33,6 +46,7 @@ type App struct {
 	logger     *zap.Logger
 }
 
+// ProfilingApp is the container of the `profefe` profiler if configured as a guest module of the `profiling` app
 type ProfilingApp struct {
 	App
 }
@@ -89,16 +103,16 @@ func (p *App) Provision(ctx caddy.Context) error {
 		Jar:     jar,
 		Timeout: time.Duration(p.Timeout),
 	}
-	if len(p.Labels)%2 != 0 {
-		return fmt.Errorf("uneven number of labels: %d", len(p.Labels))
-	}
+	// if len(p.Labels)%2 != 0 {
+	// 	return fmt.Errorf("uneven number of labels: %d", len(p.Labels))
+	// }
 	repl := caddy.NewReplacer()
 
 	p.Address = repl.ReplaceKnown(p.Address, p.Address)
 	p.Service = repl.ReplaceKnown(p.Service, p.Service)
 
 	p.profefeOptions = append(p.profefeOptions,
-		agent.WithLabels(p.Labels...),
+		// agent.WithLabels(p.Labels...),
 		agent.WithHTTPClient(p.httpClient),
 		agent.WithLogger(p.logger.Sugar().Infof),
 	)
