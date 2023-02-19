@@ -3,11 +3,15 @@ Continuous Profiling for Caddy
 
 The package contains 3 Caddy modules for push-mode continuous profiling support in Caddy.
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/mohammed90/caddy_profiling.svg)](https://pkg.go.dev/github.com/mohammed90/caddy_profiling)
+
 ## Modules
 
 ### `profiling`
 
 The module can only serve as an app that is the host for multiple other profilers to configure and propagate common profiling parameters, i.e. [CPU profile rate](https://pkg.go.dev/runtime#SetCPUProfileRate), [block profile rate](https://pkg.go.dev/runtime#SetBlockProfileRate), [mutex profile fraction](https://pkg.go.dev/runtime#SetMutexProfileFraction), and the enabled profile types.
+
+Documentation: [https://caddyserver.com/docs/json/apps/profiling/](https://caddyserver.com/docs/json/apps/profiling/)
 
 #### Sample config
 
@@ -61,6 +65,8 @@ Configures and enables the push-mode [Pyroscope](https://pyroscope.io/) agent. M
 }
 ```
 
+Documentation: [https://caddyserver.com/docs/json/apps/pyroscope/](https://caddyserver.com/docs/json/apps/pyroscope/)
+
 ### `profefe`
 
 Similar to the `pyroscope` module, the `profefe` module configures and pushes data to [Profefe](https://github.com/profefe/profefe) server. May serve as an app or a child module of the `profiling` app. It may be configured as a child profiler of the `profilig` app or as first-level app within Caddy. Configuring the `profefe` app may look like this:
@@ -83,6 +89,7 @@ Similar to the `pyroscope` module, the `profefe` module configures and pushes da
 }
 ```
 
+Documentation: [https://caddyserver.com/docs/json/apps/profefe/](https://caddyserver.com/docs/json/apps/profefe/)
 
 ## Available Profile Types
 
