@@ -1,4 +1,4 @@
-package caddy_profiling
+package profiling
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"runtime"
 
 	"github.com/caddyserver/caddy/v2"
+	"github.com/mohammed90/caddy_profiling"
 )
 
 func init() {
@@ -14,10 +15,10 @@ func init() {
 }
 
 type App struct {
-	Parameters
+	caddy_profiling.Parameters
 	ProfilersRaw []json.RawMessage `json:"profilers,omitempty" caddy:"namespace=profiling.profiler inline_key=profiler"`
 
-	profilers []Profiler
+	profilers []caddy_profiling.Profiler
 }
 
 // CaddyModule implements caddy.Module
@@ -37,10 +38,10 @@ func (a *App) Provision(ctx caddy.Context) error {
 		return fmt.Errorf("loading profiler module: %v", err)
 	}
 	for _, mod := range mods.([]any) {
-		if m, ok := mod.(ProfilingParameterSetter); ok {
+		if m, ok := mod.(caddy_profiling.ProfilingParameterSetter); ok {
 			m.SetProfilingParameter(a.Parameters)
 		}
-		a.profilers = append(a.profilers, mod.(Profiler))
+		a.profilers = append(a.profilers, mod.(caddy_profiling.Profiler))
 	}
 
 	// set the values here in case any of the child profilers changed them
@@ -52,7 +53,7 @@ func (a *App) Provision(ctx caddy.Context) error {
 
 // Starts all the child profilers to initiate the periodic push
 func (a *App) Start() (err error) {
-	var startedProfilers []Profiler
+	var startedProfilers []caddy_profiling.Profiler
 	for _, p := range a.profilers {
 		e := p.Start()
 		if e != nil {
@@ -72,15 +73,6 @@ func (a *App) Stop() (err error) {
 		err = errors.Join(err, p.Stop())
 	}
 	return err
-}
-
-type ProfilingParameterSetter interface {
-	SetProfilingParameter(Parameters)
-}
-
-type Profiler interface {
-	Start() error
-	Stop() error
 }
 
 var _ caddy.Module = (*App)(nil)

@@ -17,3 +17,12 @@ const (
 	Block        ProfileType = "block"
 	Mutex        ProfileType = "mutex"
 )
+
+type ProfilingParameterSetter interface {
+	SetProfilingParameter(Parameters)
+}
+
+type Profiler interface {
+	Start() error
+	Stop() error
+}
