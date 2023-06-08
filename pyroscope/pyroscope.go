@@ -2,6 +2,7 @@ package pyroscope
 
 import (
 	"runtime"
+	"time"
 
 	"github.com/caddyserver/caddy/v2"
 	"github.com/mohammed90/caddy_profiling"
@@ -29,8 +30,20 @@ type App struct {
 	// The token for Pyroscope Cloud. The config value may be a [placeholder](https://caddyserver.com/docs/conventions#placeholders).
 	AuthToken string `json:"auth_token,omitempty"`
 
+	// The Basic Auth username of the Phlare server
+	BasicAuthUser string `json:"basic_auth_user,omitempty"`
+
+	// The Basic Auth  of the Phlare server
+	BasicAuthPassword string `json:"basic_auth_password,omitempty"`
+
+	// The tenant ID to support the case of multi-tenant Phlare server
+	TenantID string `json:"tenant_id,omitempty"`
+
 	// Disable automatic runtime.GC runs between getting the heap profiles
 	DisableGCRuns bool `json:"disable_gc_runs,omitempty"`
+
+	// The frequency of upload to the Phlare server
+	UploadRate caddy.Duration `json:"upload_rate,omitempty"`
 
 	// The profiling parameters to be reported to Pyroscope.
 	// The paramters cpu_profile_rate, block_profile_rate, and mutex_profile_fraction are inherited from the `profiling` app if `pyroscope`
@@ -38,6 +51,10 @@ type App struct {
 	// If `pyroscope` is configured as an app, all the parameters are instated as-is.
 	// Note: Pyroscope agent does not support `threadcreate` profile type, hence ignored.
 	Parameters *caddy_profiling.Parameters `json:"parameters,omitempty"`
+
+	// TODO: decide no the inclusion of HTTP headers and whether they're beneficial
+	// Custom HTTP headers to be included. The config value may be a [placeholder](https://caddyserver.com/docs/conventions#placeholders).
+	// HTTPHeaders map[string]string
 
 	// The pprof profiles to be collected. The accepted set of values is:
 	// "cpu", "inuse_objects", "alloc_objects", "inuse_space", "alloc_space", "goroutines", "mutex_count", "mutex_duration", "block_count", "block_duration".
@@ -109,10 +126,9 @@ func (a *App) Provision(ctx caddy.Context) error {
 	}
 	a.ApplicationName = repl.ReplaceKnown(a.ApplicationName, a.ApplicationName)
 	a.ServerAddress = repl.ReplaceKnown(a.ServerAddress, a.ServerAddress)
-
-	// for k, v := range a.Tags {
-	// 	a.Tags[repl.ReplaceKnown(k, k)] = repl.ReplaceKnown(v, v)
-	// }
+	a.BasicAuthUser = repl.ReplaceKnown(a.BasicAuthUser, a.BasicAuthUser)
+	a.BasicAuthPassword = repl.ReplaceKnown(a.BasicAuthPassword, a.BasicAuthPassword)
+	a.TenantID = repl.ReplaceKnown(a.TenantID, a.TenantID)
 	a.AuthToken = repl.ReplaceKnown(a.AuthToken, a.AuthToken)
 
 	if a.Parameters != nil {
@@ -127,13 +143,16 @@ func (a *App) Provision(ctx caddy.Context) error {
 // Starts the Pyroscope session and the upload background routine
 func (a *App) Start() (err error) {
 	a.profiler, err = pyroscope.Start(pyroscope.Config{
-		ApplicationName: a.ApplicationName,
-		// Tags:            a.Tags,
-		ServerAddress: a.ServerAddress,
-		AuthToken:     a.AuthToken,
-		Logger:        a.logger,
-		ProfileTypes:  a.profileTypes,
-		DisableGCRuns: a.DisableGCRuns,
+		ApplicationName:   a.ApplicationName,
+		ServerAddress:     a.ServerAddress,
+		AuthToken:         a.AuthToken,
+		BasicAuthUser:     a.BasicAuthUser,
+		BasicAuthPassword: a.BasicAuthPassword,
+		TenantID:          a.TenantID,
+		UploadRate:        time.Duration(a.UploadRate),
+		Logger:            a.logger,
+		ProfileTypes:      a.profileTypes,
+		DisableGCRuns:     a.DisableGCRuns,
 	})
 	return err
 }
