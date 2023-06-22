@@ -76,9 +76,6 @@ func (a *App) SetProfilingParameter(parameters caddy_profiling.Parameters) {
 	if a.Parameters != nil {
 		parameters = *a.Parameters
 	}
-	if a.Parameters != nil && len(a.Parameters.ProfileTypes) > 0 {
-		return
-	}
 	for _, p := range parameters.ProfileTypes {
 		switch p {
 		case caddy_profiling.Goroutine:
