@@ -17,6 +17,8 @@ func init() {
 	caddy.RegisterModule(new(ProfilingApp))
 }
 
+const defaultDuration = 10 * time.Second
+
 // The `profefe` app collects profiling data during the life-time of the process
 // and uploads them to the profefe server.
 type App struct {
@@ -78,6 +80,8 @@ func (a *App) SetProfilingParameter(parameters caddy_profiling.Parameters) {
 	}
 	for _, p := range parameters.ProfileTypes {
 		switch p {
+		case caddy_profiling.CPU:
+			a.profefeOptions = append(a.profefeOptions, agent.WithCPUProfile(defaultDuration))
 		case caddy_profiling.Goroutine:
 			a.profefeOptions = append(a.profefeOptions, agent.WithGoroutineProfile())
 		case caddy_profiling.Heap, caddy_profiling.Allocs:

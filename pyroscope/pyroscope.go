@@ -1,6 +1,7 @@
 package pyroscope
 
 import (
+	"log"
 	"runtime"
 	"time"
 
@@ -83,11 +84,16 @@ func (*ProfilingApp) CaddyModule() caddy.ModuleInfo {
 // If the pyroscope app is configured with `profile_types`, then the ones specific to pyroscope take priority and the
 // ones passed from the `profiling` app are ignored.
 func (a *App) SetProfilingParameter(parameters caddy_profiling.Parameters) {
+	log.Printf("parameters: %+v", parameters)
 	if a.Parameters != nil {
+		log.Printf("Parameters is not nil")
 		parameters = *a.Parameters
 	}
 	for _, p := range parameters.ProfileTypes {
+		log.Printf("p = %s", p)
 		switch p {
+		case caddy_profiling.CPU:
+			a.profileTypes = append(a.profileTypes, pyroscope.ProfileCPU)
 		case caddy_profiling.Goroutine:
 			a.profileTypes = append(a.profileTypes, pyroscope.ProfileGoroutines)
 		case caddy_profiling.Heap, caddy_profiling.Allocs:
@@ -100,6 +106,7 @@ func (a *App) SetProfilingParameter(parameters caddy_profiling.Parameters) {
 			a.profileTypes = append(a.profileTypes, pyroscope.ProfileMutexCount, pyroscope.ProfileMutexDuration)
 		}
 	}
+	log.Printf("a.profileTypes: %+v", a.profileTypes)
 }
 
 // CaddyModule implements caddy.Module

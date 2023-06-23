@@ -11,13 +11,14 @@ type Parameters struct {
 	// The the fraction of mutex contention events, as accepted by the [`SetMutexProfileFraction`](https://pkg.go.dev/runtime#SetMutexProfileFraction) function.
 	MutexProfileFraction int `json:"mutex_profile_fraction,omitempty"`
 
-	// The enabled runtime profile types. The accepted values are: goroutine, heap, allocs, threadcreate, block, mutex.
+	// The enabled runtime profile types. The accepted values are: cpu, goroutine, heap, allocs, threadcreate, block, mutex.
 	ProfileTypes []ProfileType `json:"profile_types,omitempty"`
 }
 
 type ProfileType string
 
 const (
+	CPU          ProfileType = "cpu"
 	Goroutine    ProfileType = "goroutine"
 	Heap         ProfileType = "heap"
 	Allocs       ProfileType = "allocs"
