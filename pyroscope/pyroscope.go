@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/caddyserver/caddy/v2"
+	"github.com/grafana/pyroscope-go"
 	"github.com/mohammed90/caddy_profiling"
-	"github.com/pyroscope-io/client/pyroscope"
 )
 
 func init() {
